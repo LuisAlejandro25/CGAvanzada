@@ -55,7 +55,7 @@ void Shader::initialize(std::string strVertexFile,
 		printf("%s\n", &errorLog[0]);
 
 		glDeleteShader(VertexShaderId);
-		return exit(-1);
+		//return exit(-1);
 	}
 	glCompileShader(FragmentShaderId);
 	glGetShaderiv(FragmentShaderId, GL_COMPILE_STATUS, &isCompiled);
@@ -69,7 +69,7 @@ void Shader::initialize(std::string strVertexFile,
 		printf("%s\n", &errorLog[0]);
 
 		glDeleteShader(FragmentShaderId);
-		return exit(-1);
+		//return exit(-1);
 	}
 
 	ShaderProgramId = glCreateProgram();
@@ -96,7 +96,7 @@ void Shader::initialize(std::string strVertexFile,
 		fprintf(stderr,
 				"ERROR: Could not create the shader program with error Id: %d\n",
 				ErrorCheckValue);
-		exit(-1);
+		//exit(-1);
 	}
 }
 

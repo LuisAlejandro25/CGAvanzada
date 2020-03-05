@@ -63,6 +63,7 @@ Model modelEclipseRearWheels;
 Model modelEclipseFrontalWheels;
 Model modelHeliChasis;
 Model modelHeliHeli;
+Model modelHeliHeli2;
 Model modelLambo;
 Model modelLamboLeftDor;
 Model modelLamboRightDor;
@@ -81,7 +82,7 @@ Model modelDartLegoRightHand;
 Model modelDartLegoLeftLeg;
 Model modelDartLegoRightLeg;
 
-GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID; //, textureLandingPadID;
+GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
 
 GLenum types[6] = {
@@ -137,6 +138,7 @@ int numPasosDart = 0;
 
 // Var animate helicopter
 float rotHelHelY = 0.0;
+float rotHelHelX = 0.0;
 
 // Var animate lambo dor
 int stateDoor = 0;
@@ -244,10 +246,12 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelEclipseRearWheels.loadModel("../models/Eclipse/2003eclipse_rear_wheels.obj");
 	modelEclipseRearWheels.setShader(&shaderMulLighting);
 	// Helicopter
-	modelHeliChasis.loadModel("../models/Helicopter/Mi_24_chasis.obj");
+	modelHeliChasis.loadModel("../models/Helicopter/Mi_24_chasis2.obj");
 	modelHeliChasis.setShader(&shaderMulLighting);
 	modelHeliHeli.loadModel("../models/Helicopter/Mi_24_heli.obj");
 	modelHeliHeli.setShader(&shaderMulLighting);
+	modelHeliHeli2.loadModel("../models/Helicopter/Mi_24_heli2.obj");
+	modelHeliHeli2.setShader(&shaderMulLighting);
 	// Lamborginhi
 	modelLambo.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_chasis.obj");
 	modelLambo.setShader(&shaderMulLighting);
@@ -443,7 +447,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Libera la memoria de la textura
 	textureHighway.freeImage(bitmap);
 
-	/*// Definiendo la textura a utilizar
+	// Definiendo la textura a utilizar
 	Texture textureLandingPad("../Textures/landingPad.jpg");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
 	bitmap = textureLandingPad.loadImage();
@@ -473,7 +477,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	} else
 		std::cout << "Failed to load texture" << std::endl;
 	// Libera la memoria de la textura
-	textureLandingPad.freeImage(bitmap);*/
+	textureLandingPad.freeImage(bitmap);
 }
 
 void destroy() {
@@ -691,12 +695,15 @@ void applicationLoop() {
 	modelMatrixEclipse = glm::translate(modelMatrixEclipse, glm::vec3(27.5, 0, 30.0));
 	modelMatrixEclipse = glm::rotate(modelMatrixEclipse, glm::radians(180.0f), glm::vec3(0, 1, 0));
 	int state = 0;
+	int stateH = 0;
 	float advanceCount = 0.0;
 	float rotCount = 0.0;
 	float rotWheelsX = 0.0;
 	float rotWheelsY = 0.0;
 	int numberAdvance = 0;
 	int maxAdvance = 0.0;
+	float velocidadAterrizaje = 0.05;
+	float avanceHeli = 0.0;
 
 	matrixModelRock = glm::translate(matrixModelRock, glm::vec3(-3.0, 0.0, 2.0));
 
@@ -861,12 +868,12 @@ void applicationLoop() {
 		boxHighway.setOrientation(glm::vec3(0.0, 0.0, 0.0));
 		boxHighway.render();
 		// Landing pad
-		/*glBindTexture(GL_TEXTURE_2D, textureLandingPadID);
+		glBindTexture(GL_TEXTURE_2D, textureLandingPadID);
 		boxLandingPad.setScale(glm::vec3(10.0, 0.05, 10.0));
 		boxLandingPad.setPosition(glm::vec3(5.0, 0.05, -5.0));
 		boxLandingPad.setOrientation(glm::vec3(0.0, 0.0, 0.0));
 		boxLandingPad.render();
-		glBindTexture(GL_TEXTURE_2D, 0);*/
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		/*******************************************
 		 * Custom objects obj
@@ -902,10 +909,14 @@ void applicationLoop() {
 		modelHeliChasis.render(modelMatrixHeliChasis);
 
 		glm::mat4 modelMatrixHeliHeli = glm::mat4(modelMatrixHeliChasis);
-		modelMatrixHeliHeli = glm::translate(modelMatrixHeliHeli, glm::vec3(0.0, 0.0, -0.249548));
-		modelMatrixHeliHeli = glm::rotate(modelMatrixHeliHeli, rotHelHelY, glm::vec3(0, 1, 0));
 		modelMatrixHeliHeli = glm::translate(modelMatrixHeliHeli, glm::vec3(0.0, 0.0, 0.249548));
 		modelHeliHeli.render(modelMatrixHeliHeli);
+
+		glm::mat4 modelMatrixHeliHeli2 = glm::mat4(modelMatrixHeliChasis);
+		modelMatrixHeliHeli2 = glm::translate(modelMatrixHeliHeli2, glm::vec3(0.5, 2.1, -5.65));
+		modelMatrixHeliHeli2 = glm::rotate(modelMatrixHeliHeli2, rotHelHelX, glm::vec3(1, 0, 0));
+		modelMatrixHeliHeli2 = glm::translate(modelMatrixHeliHeli2, glm::vec3(-0.5, -2.1, 5.65));
+		modelHeliHeli2.render(modelMatrixHeliHeli2);
 
 		// Lambo car
 		glDisable(GL_CULL_FACE);
@@ -938,9 +949,9 @@ void applicationLoop() {
 		modelDartLegoMask.render(modelMatrixDartHead);
 		glm::mat4 modelMatrixDartLeftArm = glm::mat4(modelMatrixDartBody);
 		modelMatrixDartLeftArm = glm::translate(modelMatrixDartLeftArm, glm::vec3(-0.023515, 2.43607, 0.446066));
-		modelMatrixDartLeftArm = glm::rotate(modelMatrixDartLeftArm, glm::radians(-5.0f), glm::vec3(1, 0, 0));
+		modelMatrixDartLeftArm = glm::rotate(modelMatrixDartLeftArm, glm::radians(-10.0f), glm::vec3(1, 0, 0));
 		modelMatrixDartLeftArm = glm::rotate(modelMatrixDartLeftArm, rotDartLeftArm, glm::vec3(0, 0, 1));
-		modelMatrixDartLeftArm = glm::rotate(modelMatrixDartLeftArm, glm::radians(5.0f), glm::vec3(1, 0, 0));
+		modelMatrixDartLeftArm = glm::rotate(modelMatrixDartLeftArm, glm::radians(10.0f), glm::vec3(1, 0, 0));
 		modelMatrixDartLeftArm = glm::translate(modelMatrixDartLeftArm, glm::vec3(0.023515, -2.43607, -0.446066));
 		modelDartLegoLeftArm.render(modelMatrixDartLeftArm);
 		glm::mat4 modelMatrixDartLeftHand = glm::mat4(modelMatrixDartLeftArm);
@@ -994,7 +1005,7 @@ void applicationLoop() {
 		glDepthFunc(oldDepthFuncMode);
 
 		// Para salvar el frame
-		/*if(record && modelSelected == 1){
+		if(record && modelSelected == 1){
 			matrixDartJoints.push_back(rotDartHead);
 			matrixDartJoints.push_back(rotDartLeftArm);
 			matrixDartJoints.push_back(rotDartLeftHand);
@@ -1006,8 +1017,8 @@ void applicationLoop() {
 				appendFrame(myfile, matrixDartJoints);
 				saveFrame = false;
 			}
-		}*/
-		/*else if(keyFramesDartJoints.size() > 0){
+		}
+		else if(keyFramesDartJoints.size() > 0){
 			// Para reproducir el frame
 			interpolationDartJoints = numPasosDartJoints / (float) maxNumPasosDartJoints;
 			numPasosDartJoints++;
@@ -1026,16 +1037,16 @@ void applicationLoop() {
 			rotDartRightHand = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 4, interpolationDartJoints);
 			rotDartLeftLeg = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 5, interpolationDartJoints);
 			rotDartRightLeg = interpolate(keyFramesDartJoints, indexFrameDartJoints, indexFrameDartJointsNext, 6, interpolationDartJoints);
-		}*/
+		}
 
-		/*if (record && modelSelected == 2) {
+		if (record && modelSelected == 2) {
 			matrixDart.push_back(modelMatrixDart);
 			if (saveFrame) {
 				appendFrame(myfile, matrixDart);
 				saveFrame = false;
 			}
-		}*/
-		/*else if (keyFramesDart.size() > 0) {
+		}
+		else if (keyFramesDart.size() > 0) {
 			// Para reproducir el frame
 			interpolationDart = numPasosDart / (float)maxNumPasosDart;
 			numPasosDart++;
@@ -1048,16 +1059,17 @@ void applicationLoop() {
 			if (indexFrameDartNext > keyFramesDart.size() - 1)
 				indexFrameDartNext = 0;
 			modelMatrixDart = interpolate(keyFramesDart, indexFrameDart, indexFrameDartNext, 0, interpolationDart);
-		}*/
+		}
 
 		// Constantes de animaciones
 		rotHelHelY += 0.5;
+		rotHelHelX += 0.5;
 
 		/*******************************************
 		 * State machines
 		 *******************************************/
 		// State machine for eclipse car
-		/*switch(state){
+		switch(state){
 		case 0:
 			if(numberAdvance == 0)
 				maxAdvance = 65.0;
@@ -1099,10 +1111,10 @@ void applicationLoop() {
 					numberAdvance = 1;
 			}
 			break;
-		}*/
+		}
 
 		// State machine for the lambo car
-		/*switch(stateDoor){
+		switch(stateDoor){
 		case 0:
 			dorRotCount += 0.5;
 			if(dorRotCount > 75)
@@ -1115,7 +1127,30 @@ void applicationLoop() {
 				stateDoor = 0;
 			}
 			break;
-		}*/
+		}
+
+		//State Helicopter 
+		switch (stateH) {
+		case 0:
+			modelMatrixHeli = glm::translate(modelMatrixHeli, glm::vec3(0.0, -velocidadAterrizaje, 0.0));
+			avanceHeli += velocidadAterrizaje;
+
+			modelMatrixHeliHeli = glm::translate(modelMatrixHeliHeli, glm::vec3(0.0, 0.0, -0.249548));
+			modelMatrixHeliHeli = glm::rotate(modelMatrixHeliHeli, rotHelHelY, glm::vec3(0, 1, 0));
+			modelMatrixHeliHeli = glm::translate(modelMatrixHeliHeli, glm::vec3(0.0, 0.0, 0.249548));
+			modelHeliHeli.render(modelMatrixHeliHeli);
+
+			/*modelMatrixHeliHeli2 = glm::translate(modelMatrixHeliHeli2, glm::vec3(-0.36, -2.0, 5.6));
+			modelMatrixHeliHeli2 = glm::rotate(modelMatrixHeliHeli2, rotHelHelX, glm::vec3(1, 0, 0));
+			modelMatrixHeliHeli2 = glm::translate(modelMatrixHeliHeli2, glm::vec3(0.36, 2.0, -5.6));
+			modelHeliHeli2.render(modelMatrixHeliHeli2);*/
+			if (avanceHeli >= 10.0)
+				stateH = 1;
+			break;
+		case 1:
+			//awa;
+			break;
+		}
 
 		glfwSwapBuffers(window);
 	}
